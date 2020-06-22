@@ -19,6 +19,7 @@ class CocktailVC: UIViewController {
            super.viewDidLoad()
         var cellNib = UINib(nibName: CellIdentifiers.cocktailCell, bundle: nil)
         tableView.register(cellNib, forCellReuseIdentifier: CellIdentifiers.cocktailCell)
+        CocktailAPI.fetchCocktails(<#T##self: CocktailAPI##CocktailAPI#>)
     }
     
     
@@ -33,6 +34,12 @@ extension CocktailVC: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: CellIdentifiers.cocktailCell, for: indexPath)
         return cell
+    }
+    
+    func populateCell() {
+//        var cocktail: Cocktail
+//        
+//        var imageURL = cocktail.thumbUrl
     }
     
     

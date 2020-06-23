@@ -7,10 +7,17 @@
 //
 
 import UIKit
+import SDWebImage
 
 class CocktailCell: UITableViewCell {
 
     @IBOutlet weak var nameLabel: UILabel!
     @IBOutlet weak var cocktailImage: UIImageView!
+    
+    func configure(result: Cocktail) {
+        nameLabel.text = result.name
+        let url = result.thumbUrl
+        cocktailImage.sd_setImage(with: url, placeholderImage: UIImage(named: "Placeholder"), options: .highPriority)
+    }
     
 }

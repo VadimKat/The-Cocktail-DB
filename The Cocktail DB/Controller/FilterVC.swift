@@ -14,19 +14,20 @@ protocol FilterVCDelegate: class {
 
 class FilterVC: UIViewController {
     
+     // MARK: - Outlets
     @IBOutlet weak var tableView: UITableView!
-//    @IBOutlet weak var backButton: UIButton!
     
+    // MARK: - Properties
     var categories: [Category]?
     var selectedCategory: [Category] = []
-    
     weak var delegate: FilterVCDelegate?
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
     }
     
+    // MARK: IBActions
     @IBAction func backButtonPressed(_ sender: UIButton) {
         dismiss(animated: true, completion: nil)
     }
@@ -38,6 +39,7 @@ class FilterVC: UIViewController {
     
 }
 
+// MARK: TableViewDelegate, TableViewDataSource
 extension FilterVC: UITableViewDelegate, UITableViewDataSource {
   
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -84,13 +86,14 @@ extension FilterVC: UITableViewDelegate, UITableViewDataSource {
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
+    
+    // MARK: - METHODS
     func selectCategory(indexPath: IndexPath) {
         selectedCategory.append(categories![indexPath.row])
         print(selectedCategory)
     }
     
     func removeCategoryFromSelection(for indexPath: IndexPath) {
-           
         guard let categoryIndexToRemove = selectedCategory.firstIndex(where: { $0 == categories![indexPath.row] }) else { return }
            print(categoryIndexToRemove)
            selectedCategory.remove(at: categoryIndexToRemove)

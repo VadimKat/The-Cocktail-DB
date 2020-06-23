@@ -24,6 +24,9 @@
 		52AAC94424A0E7D200318DB2 /* CategoryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52AAC94324A0E7D200318DB2 /* CategoryModels.swift */; };
 		52AAC94724A0E9ED00318DB2 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52AAC94624A0E9ED00318DB2 /* NetworkService.swift */; };
 		52AAC94924A0EA3200318DB2 /* CocktailAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52AAC94824A0EA3200318DB2 /* CocktailAPI.swift */; };
+		52AAC94B24A1EBB600318DB2 /* LoadingCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 52AAC94A24A1EBB600318DB2 /* LoadingCell.xib */; };
+		52AAC94D24A1EBC600318DB2 /* ErrorCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 52AAC94C24A1EBC600318DB2 /* ErrorCell.xib */; };
+		52AAC94F24A1FA7700318DB2 /* ProgressState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52AAC94E24A1FA7700318DB2 /* ProgressState.swift */; };
 		9022D487095074C60C10AF79 /* Pods_The_Cocktail_DB.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 71BBE0CFC7BF58D89F5C2698 /* Pods_The_Cocktail_DB.framework */; };
 /* End PBXBuildFile section */
 
@@ -47,6 +50,9 @@
 		52AAC94324A0E7D200318DB2 /* CategoryModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryModels.swift; sourceTree = "<group>"; };
 		52AAC94624A0E9ED00318DB2 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
 		52AAC94824A0EA3200318DB2 /* CocktailAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CocktailAPI.swift; sourceTree = "<group>"; };
+		52AAC94A24A1EBB600318DB2 /* LoadingCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LoadingCell.xib; sourceTree = "<group>"; };
+		52AAC94C24A1EBC600318DB2 /* ErrorCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ErrorCell.xib; sourceTree = "<group>"; };
+		52AAC94E24A1FA7700318DB2 /* ProgressState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressState.swift; sourceTree = "<group>"; };
 		5CB0BB2FE3ACD6682D85162B /* Pods-The Cocktail DB.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-The Cocktail DB.debug.xcconfig"; path = "Target Support Files/Pods-The Cocktail DB/Pods-The Cocktail DB.debug.xcconfig"; sourceTree = "<group>"; };
 		71BBE0CFC7BF58D89F5C2698 /* Pods_The_Cocktail_DB.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_The_Cocktail_DB.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C1BF2204AD2A765C1E2B4D9C /* Pods-The Cocktail DB.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-The Cocktail DB.release.xcconfig"; path = "Target Support Files/Pods-The Cocktail DB/Pods-The Cocktail DB.release.xcconfig"; sourceTree = "<group>"; };
@@ -117,10 +123,10 @@
 		52AAC93D24A0E72C00318DB2 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
-				5275396B24A0B42B007ECEE7 /* AppDelegate.swift */,
-				5275396D24A0B42B007ECEE7 /* SceneDelegate.swift */,
 				52AAC93124A0C73400318DB2 /* CocktailVC.swift */,
 				52AAC93324A0C74100318DB2 /* FilterVC.swift */,
+				5275396B24A0B42B007ECEE7 /* AppDelegate.swift */,
+				5275396D24A0B42B007ECEE7 /* SceneDelegate.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -139,6 +145,7 @@
 			isa = PBXGroup;
 			children = (
 				52AAC93524A0C86500318DB2 /* CellIdentifiers.swift */,
+				52AAC94E24A1FA7700318DB2 /* ProgressState.swift */,
 				52AAC94124A0E7C600318DB2 /* CocktailModels.swift */,
 				52AAC94324A0E7D200318DB2 /* CategoryModels.swift */,
 			);
@@ -150,6 +157,8 @@
 			children = (
 				52AAC93724A0CDFF00318DB2 /* CocktailCell.swift */,
 				52AAC92F24A0C47800318DB2 /* CocktailCell.xib */,
+				52AAC94A24A1EBB600318DB2 /* LoadingCell.xib */,
+				52AAC94C24A1EBC600318DB2 /* ErrorCell.xib */,
 			);
 			path = CocktailCell;
 			sourceTree = "<group>";
@@ -246,6 +255,8 @@
 				52AAC92E24A0BC1000318DB2 /* Roboto-Bold.ttf in Resources */,
 				5275397524A0B42E007ECEE7 /* Assets.xcassets in Resources */,
 				52AAC92A24A0BBC000318DB2 /* Roboto-Regular.ttf in Resources */,
+				52AAC94B24A1EBB600318DB2 /* LoadingCell.xib in Resources */,
+				52AAC94D24A1EBC600318DB2 /* ErrorCell.xib in Resources */,
 				5275397324A0B42B007ECEE7 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -309,6 +320,7 @@
 				5275396E24A0B42B007ECEE7 /* SceneDelegate.swift in Sources */,
 				52AAC93624A0C86500318DB2 /* CellIdentifiers.swift in Sources */,
 				52AAC93824A0CDFF00318DB2 /* CocktailCell.swift in Sources */,
+				52AAC94F24A1FA7700318DB2 /* ProgressState.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

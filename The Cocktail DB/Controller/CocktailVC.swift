@@ -14,14 +14,23 @@ class CocktailVC: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var filterButton: UIButton!
     
-    private let dataFetcher = CocktailAPI()
     
+    // MARK: - Properties
+    private let dataFetcher = CocktailAPI()
+    private let group = DispatchGroup()
+    private var sectionIndex = 0
+    private let segueID = "filterVC"
+    private var ableToFetch = true
+    private var isLoading: Bool = false {
+        didSet {
+            loadTriggered?()
+        }
+    }
     
     //MARK: - Standard
     private var cocktails: [String:[Cocktail]] = [:]
     
-    // 8. As soon as we get categories, didSet triggers loadCocktails and populates cocktails array
-    private(set) var categories: [Category] = [] {
+    private var categories: [Category] = [] {
         didSet {
             let category = categories[0].category
             group.enter()
@@ -32,17 +41,17 @@ class CocktailVC: UIViewController {
     }
     
     //MARK: - Filtered
-    var selectedCocktails: [String:[Cocktail]] = [:]
+    private var selectedCocktails: [String:[Cocktail]] = [:]
     
     
-    var selectedCategories: [Category] = [] {
+    private var selectedCategories: [Category] = [] {
         didSet {
             selectedCocktails = [:]
             scrollBeginFetch(from: 0)
         }
     }
     
-    var sortedSelectedCategories: [Category] {
+    private var sortedSelectedCategories: [Category] {
         var indecies: [Int] = []
         for category in selectedCategories {
             indecies.append(categories.firstIndex(of: category)!)
@@ -50,47 +59,35 @@ class CocktailVC: UIViewController {
         return zip(selectedCategories, indecies).sorted(by: { $0.1 < $1.1 }).map( {$0.0} )
     }
     
+    // MARK: - Closures-helpers
+    var loadTriggered: (() -> Void)?
+    var showError: ((Error) -> Void)?
+  
+    // MARK: - viewDidLoad()
     
-    
-    
-    
-    var isLoading: Bool = false {
-        didSet {
-            loadTriggered?()
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        let cellNib = UINib(nibName: CellIdentifiers.cocktailCell, bundle: nil)
+        tableView.register(cellNib, forCellReuseIdentifier: CellIdentifiers.cocktailCell)
+        startLoadingData()
+        loadTriggered = {
+            if !self.isLoading {
+                self.tableView.reloadData()
+            }
         }
     }
     
-       var sectionIndex = 0
-    private var canFetchMore = true
+    // MARK: - METHODS
     
-    
-    
-    var loadTriggered: (() -> Void)?
-    var reloadData: (() -> Void)?
-    var showError: ((Error) -> Void)?
-    let group = DispatchGroup()
-    
-    
-    
-    
-    //MARK: Loading Data
-    // 3. trigger load
-    func startLoadingData() {
-        // 4. trigger load did set for first time but nothing heppens
+    private func startLoadingData() {
         isLoading = true
-        // 5. loading categories
         loadCocktailCategories()
         
-        // 9. we trigger didSet isLoading for the second time
         group.notify(queue: .main) {
             self.isLoading = false
-//            self.reloadData?()
         }
     }
     
-    //MARK: Loading Categories
-    
-    // 6. load categories
     private func loadCocktailCategories() {
         
         group.enter()
@@ -99,17 +96,32 @@ class CocktailVC: UIViewController {
             switch result {
                 
             case .success(let categories):
-                // 7. categories get value and did set triggers
                 self?.categories = categories
                 
             case .failure(let error):
                 self?.showError?(error)
+                self?.showAlert(error: error)
+                
             }
             self?.group.leave()
         }
     }
     
-    //MARK: Loading Cocktails
+    private func showAlert(error: Error) {
+        let alert = UIAlertController(title: " \(error.localizedDescription)", message: "Check your internet conncetion", preferredStyle: .alert)
+        let ok = UIAlertAction(title: "OK", style: .cancel, handler: nil)
+        let tryAgain = UIAlertAction(title: "Try again", style: .default) { (_) in
+            self.startLoadingData()
+            self.loadTriggered = {
+                if !self.isLoading {
+                    self.tableView.reloadData()
+                }
+            }
+        }
+        alert.addAction(ok)
+        alert.addAction(tryAgain)
+        present(alert, animated: true)
+    }
     
     private func loadCocktails(from category: String, completion: @escaping ([Cocktail]) -> Void) {
         
@@ -129,7 +141,7 @@ class CocktailVC: UIViewController {
         }
     }
     
-    func scrollBeginFetch(from section: Int) {
+    private func scrollBeginFetch(from section: Int) {
         
         DispatchQueue.global(qos: .background).async(group: group) {
             guard !self.categories.isEmpty else { return }
@@ -156,41 +168,12 @@ class CocktailVC: UIViewController {
         }
         group.notify(queue: .main) {
             self.isLoading = false
-            self.reloadData?()
+//            self.reloadData?()
         }
     }
     
-    //
-    //         //MARK: FilterView UI
-    //
-    //         func filterViewModel() -> FilterViewModel {
-    //             let filterCategories = categories
-    //             return FilterViewModel(categories: filterCategories)
-    //         }
     
-    
-    
-    
-    
-    let segueID = "filterVC"
-    
-    
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        // 1. register cell
-        let cellNib = UINib(nibName: CellIdentifiers.cocktailCell, bundle: nil)
-        tableView.register(cellNib, forCellReuseIdentifier: CellIdentifiers.cocktailCell)
-        // 2. load data
-        startLoadingData()
-        // 10. we reload data after didSet triggered
-        loadTriggered = {
-            if !self.isLoading {
-                self.tableView.reloadData()
-            }
-    }
-    }
-    
+    // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == segueID {
             let destinationVC = segue.destination as! FilterVC
@@ -200,7 +183,7 @@ class CocktailVC: UIViewController {
         }
     }
     
-    
+     // MARK: - @IBActions
     @IBAction func filterButtonPressed(_ sender: UIButton) {
         performSegue(withIdentifier: segueID, sender: self)
     }
@@ -208,6 +191,8 @@ class CocktailVC: UIViewController {
     
 }
 
+
+// MARK: TableViewDelegate, TableViewDataSource
 extension CocktailVC: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -224,8 +209,8 @@ extension CocktailVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-           return 120
-       }
+        return 120
+    }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: CellIdentifiers.cocktailCell, for: indexPath) as! CocktailCell
@@ -235,42 +220,45 @@ extension CocktailVC: UITableViewDelegate, UITableViewDataSource {
                 let cocktail = categoryCocktails[indexPath.row]
                 cell.configure(result: cocktail)
             }
-            } else {
-                let category = sortedSelectedCategories[indexPath.section].category
-                if let selectedCategoryCocktails = selectedCocktails[category] {
-                    let cocktail = selectedCategoryCocktails[indexPath.row]
-                    cell.configure(result: cocktail)
-                }
+        } else {
+            let category = sortedSelectedCategories[indexPath.section].category
+            if let selectedCategoryCocktails = selectedCocktails[category] {
+                let cocktail = selectedCategoryCocktails[indexPath.row]
+                cell.configure(result: cocktail)
             }
-            return cell
         }
-            
-            func numberOfSections(in tableView: UITableView) -> Int {
-                guard !selectedCategories.isEmpty else { return categories.count }
-                
-                return selectedCategories.count
-            }
-    
-          func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-            let view = UIView()
-            view.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
-            let label = UILabel()
-            label.font = UIFont(name: "Roboto-Regular", size: 14)
-            if selectedCategories.isEmpty {
-                label.text = "\(categories[section].category)"
-            } else {
-                label.text = "\(sortedSelectedCategories[section].category)"
-            }
-            label.textColor = UIColor(red: 0.496, green: 0.496, blue: 0.496, alpha: 1)
-            label.frame = CGRect(x: 20, y: 5, width: 200, height: 35)
-            view.addSubview(label)
-            return view
+        return cell
     }
-           
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        guard !selectedCategories.isEmpty else { return categories.count }
+        
+        return selectedCategories.count
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let view = UIView()
+        view.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+        let label = UILabel()
+        label.font = UIFont(name: "Roboto-Regular", size: 14)
+        if selectedCategories.isEmpty {
+            label.text = "\(categories[section].category)"
+        } else {
+            label.text = "\(sortedSelectedCategories[section].category)"
+        }
+        label.textColor = UIColor(red: 0.496, green: 0.496, blue: 0.496, alpha: 1)
+        label.frame = CGRect(x: 20, y: 5, width: 200, height: 35)
+        view.addSubview(label)
+        return view
+    }
+    
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 45
     }
-    
+}
+
+// MARK: - scrollViewDidScroll
+extension CocktailVC {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         var categories: [Category] = []
         if selectedCategories.isEmpty {
@@ -283,13 +271,11 @@ extension CocktailVC: UITableViewDelegate, UITableViewDataSource {
             let offsetY = scrollView.contentOffset.y
             let contentHeight = scrollView.contentSize.height
             if offsetY > contentHeight - (2 * scrollView.frame.height) {
-                if canFetchMore {
-                    canFetchMore = false
+                if ableToFetch {
+                    ableToFetch = false
                     scrollBeginFetch(from: sectionIndex)
-                    reloadData = {
-                        self.tableView.reloadData()
-                        self.canFetchMore = true
-                    }
+                    tableView.reloadData()
+                    ableToFetch = true
                     sectionIndex += 1
                     print("Section index: \(sectionIndex)")
                 }
@@ -298,6 +284,7 @@ extension CocktailVC: UITableViewDelegate, UITableViewDataSource {
     }
 }
 
+// MARK: - FilterVCDelegate
 extension CocktailVC: FilterVCDelegate {
     func filterViewController(filter: FilterVC, didSelectCategory category: [Category]) {
         selectedCategories = category

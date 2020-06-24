@@ -10,11 +10,11 @@ import Foundation
 
 struct Cocktail: Codable {
     let name: String
-    let thumbUrl: URL
+    let thumbnailUrl: URL
     
     enum CodingKeys: String, CodingKey {
         case name = "strDrink"
-        case thumbUrl = "strDrinkThumb"
+        case thumbnailUrl = "strDrinkThumb"
     }
 }
 

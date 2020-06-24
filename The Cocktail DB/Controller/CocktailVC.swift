@@ -23,9 +23,13 @@ class CocktailVC: UIViewController {
     private var ableToFetch = true
     private var isLoading: Bool = false {
         didSet {
-            loadTriggered?()
+            loadingTriggered?()
         }
     }
+    
+    // MARK: - Closures-helpers
+       var loadingTriggered: (() -> Void)?
+       var showError: ((Error) -> Void)?
     
     //MARK: - Standard
     private var cocktails: [String:[Cocktail]] = [:]
@@ -59,19 +63,25 @@ class CocktailVC: UIViewController {
         return zip(selectedCategories, indecies).sorted(by: { $0.1 < $1.1 }).map( {$0.0} )
     }
     
-    // MARK: - Closures-helpers
-    var loadTriggered: (() -> Void)?
-    var showError: ((Error) -> Void)?
+   
   
     // MARK: - viewDidLoad()
     
+    private(set) var state: ProgressState = .loading
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        let cellNib = UINib(nibName: CellIdentifiers.cocktailCell, bundle: nil)
+        var cellNib = UINib(nibName: CellIdentifiers.cocktailCell, bundle: nil)
         tableView.register(cellNib, forCellReuseIdentifier: CellIdentifiers.cocktailCell)
+        cellNib = UINib(nibName: CellIdentifiers.loadingCell, bundle: nil)
+        tableView.register(cellNib, forCellReuseIdentifier: CellIdentifiers.loadingCell)
+        cellNib = UINib(nibName: CellIdentifiers.errorCell, bundle: nil)
+        tableView.register(cellNib, forCellReuseIdentifier: CellIdentifiers.errorCell)
+        
         startLoadingData()
-        loadTriggered = {
+        loadingTriggered = {
             if !self.isLoading {
+                self.state = .results
                 self.tableView.reloadData()
             }
         }
@@ -109,10 +119,14 @@ class CocktailVC: UIViewController {
     
     private func showAlert(error: Error) {
         let alert = UIAlertController(title: " \(error.localizedDescription)", message: "Check your internet conncetion", preferredStyle: .alert)
-        let ok = UIAlertAction(title: "OK", style: .cancel, handler: nil)
+        let ok = UIAlertAction(title: "OK", style: .cancel) { (_) in
+            self.state = .error
+            self.tableView.reloadData()
+        }
+
         let tryAgain = UIAlertAction(title: "Try again", style: .default) { (_) in
             self.startLoadingData()
-            self.loadTriggered = {
+            self.loadingTriggered = {
                 if !self.isLoading {
                     self.tableView.reloadData()
                 }
@@ -168,7 +182,6 @@ class CocktailVC: UIViewController {
         }
         group.notify(queue: .main) {
             self.isLoading = false
-//            self.reloadData?()
         }
     }
     
@@ -196,6 +209,12 @@ class CocktailVC: UIViewController {
 extension CocktailVC: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        switch state {
+        case .loading:
+            return 1
+        case .error:
+         return 1
+        case .results:
         if selectedCocktails.isEmpty {
             guard !cocktails.isEmpty else { return 0 }
             let category = categories[section].category
@@ -206,6 +225,7 @@ extension CocktailVC: UITableViewDelegate, UITableViewDataSource {
             guard let selectedCategoryCocktails = selectedCocktails[category] else { return 0 }
             return selectedCategoryCocktails.count
         }
+        }
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -213,32 +233,56 @@ extension CocktailVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: CellIdentifiers.cocktailCell, for: indexPath) as! CocktailCell
-        if selectedCocktails.isEmpty {
-            let category = categories[indexPath.section].category
-            if !cocktails.isEmpty, let categoryCocktails = cocktails[category] {
-                let cocktail = categoryCocktails[indexPath.row]
-                cell.configure(result: cocktail)
-            }
-        } else {
-            let category = sortedSelectedCategories[indexPath.section].category
-            if let selectedCategoryCocktails = selectedCocktails[category] {
-                let cocktail = selectedCategoryCocktails[indexPath.row]
-                cell.configure(result: cocktail)
-            }
+        switch state {
+        case .loading:
+             let cell = tableView.dequeueReusableCell(withIdentifier: CellIdentifiers.loadingCell, for: indexPath)
+             return cell
+        case .error:
+            let cell = tableView.dequeueReusableCell(withIdentifier: CellIdentifiers.errorCell, for: indexPath)
+             return cell
+        case .results:
+            let cell = tableView.dequeueReusableCell(withIdentifier: CellIdentifiers.cocktailCell, for: indexPath) as! CocktailCell
+                   if selectedCocktails.isEmpty {
+                       let category = categories[indexPath.section].category
+                       if !cocktails.isEmpty, let categoryCocktails = cocktails[category] {
+                           let cocktail = categoryCocktails[indexPath.row]
+                           cell.configure(result: cocktail)
+                       }
+                   } else {
+                       let category = sortedSelectedCategories[indexPath.section].category
+                       if let selectedCategoryCocktails = selectedCocktails[category] {
+                           let cocktail = selectedCategoryCocktails[indexPath.row]
+                           cell.configure(result: cocktail)
+                       }
+                   }
+             return cell
         }
-        return cell
+//        return cell
+       
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        guard !selectedCategories.isEmpty else { return categories.count }
+        switch state {
+        case .loading: return 1
+        case .error: return 1
+        case .results:
+            guard !selectedCategories.isEmpty else { return categories.count }
+             return selectedCategories.count
+        }
+       
         
-        return selectedCategories.count
+       
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let view = UIView()
         view.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+        
+        switch state {
+        case .loading: return view
+        case .error: return view
+        case .results:
+        
         let label = UILabel()
         label.font = UIFont(name: "Roboto-Regular", size: 14)
         if selectedCategories.isEmpty {
@@ -250,6 +294,7 @@ extension CocktailVC: UITableViewDelegate, UITableViewDataSource {
         label.frame = CGRect(x: 20, y: 5, width: 200, height: 35)
         view.addSubview(label)
         return view
+        }
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
@@ -277,7 +322,6 @@ extension CocktailVC {
                     tableView.reloadData()
                     ableToFetch = true
                     sectionIndex += 1
-                    print("Section index: \(sectionIndex)")
                 }
             }
         }

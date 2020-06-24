@@ -77,7 +77,7 @@ extension FilterVC: UITableViewDelegate, UITableViewDataSource {
         imgView.image = UIImage(named: "Check")
         
         if selectedCategory.contains(categories![indexPath.row]) {
-            removeCategoryFromSelection(for: indexPath)
+            removeCategory(indexPath: indexPath)
             cell.accessoryView = .none
         } else {
         selectCategory(indexPath: indexPath)
@@ -90,14 +90,11 @@ extension FilterVC: UITableViewDelegate, UITableViewDataSource {
     // MARK: - METHODS
     func selectCategory(indexPath: IndexPath) {
         selectedCategory.append(categories![indexPath.row])
-        print(selectedCategory)
     }
     
-    func removeCategoryFromSelection(for indexPath: IndexPath) {
+    func removeCategory(indexPath: IndexPath) {
         guard let categoryIndexToRemove = selectedCategory.firstIndex(where: { $0 == categories![indexPath.row] }) else { return }
-           print(categoryIndexToRemove)
            selectedCategory.remove(at: categoryIndexToRemove)
-        print(selectedCategory)
        }
     
     

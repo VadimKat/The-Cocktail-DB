@@ -103,6 +103,8 @@
 		52AAC92724A0BB8800318DB2 /* Support files */ = {
 			isa = PBXGroup;
 			children = (
+				52AAC93524A0C86500318DB2 /* CellIdentifiers.swift */,
+				52AAC94E24A1FA7700318DB2 /* ProgressState.swift */,
 				5275397424A0B42E007ECEE7 /* Assets.xcassets */,
 				5275397924A0B42E007ECEE7 /* Info.plist */,
 				52AAC92824A0BBA300318DB2 /* Fonts */,
@@ -144,8 +146,6 @@
 		52AAC93F24A0E73B00318DB2 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				52AAC93524A0C86500318DB2 /* CellIdentifiers.swift */,
-				52AAC94E24A1FA7700318DB2 /* ProgressState.swift */,
 				52AAC94124A0E7C600318DB2 /* CocktailModels.swift */,
 				52AAC94324A0E7D200318DB2 /* CategoryModels.swift */,
 			);

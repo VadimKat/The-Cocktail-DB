@@ -10,4 +10,6 @@ import Foundation
 
 struct CellIdentifiers {
     static let cocktailCell = "CocktailCell"
+    static let loadingCell = "LoadingCell"
+    static let errorCell = "ErrorCell"
 }

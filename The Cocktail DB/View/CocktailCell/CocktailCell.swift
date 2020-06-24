@@ -17,7 +17,7 @@ class CocktailCell: UITableViewCell {
     func configure(result: Cocktail) {
         nameLabel.text = result.name
         let url = result.thumbnailUrl
-        cocktailImage.sd_setImage(with: url, placeholderImage: UIImage(named: "Placeholder"), options: .highPriority)
+        cocktailImage.sd_setImage(with: url, placeholderImage: UIImage(named: "Placeholder1"), options: .highPriority)
     }
     
 }

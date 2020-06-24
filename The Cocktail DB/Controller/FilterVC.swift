@@ -22,11 +22,6 @@ class FilterVC: UIViewController {
     var selectedCategory: [Category] = []
     weak var delegate: FilterVCDelegate?
     
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-    }
-    
     // MARK: IBActions
     @IBAction func backButtonPressed(_ sender: UIButton) {
         dismiss(animated: true, completion: nil)
